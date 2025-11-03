@@ -1,113 +1,130 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>日記カレンダー</title>
+  <meta charset="UTF-8">
+  <title>カレンダーページ</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background-color: #fafafa;
-      color: #333;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 40px;
       text-align: center;
-      margin: 40px;
+      color: #333;
     }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    .month {
-      margin-bottom: 50px;
-    }
-
-    table {
-      border-collapse: collapse;
-      margin: 0 auto 20px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      max-width: 500px;
+      margin: 10px auto 40px;
+      background: white;
       padding: 10px;
-      width: 50px;
-      height: 50px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    th {
-      background-color: #eee;
+    .day {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
     }
-
-    td a {
+    .header {
+      font-weight: bold;
+      background: #ddd;
+    }
+    .sunday {
+      color: red;
+    }
+    .saturday {
+      color: blue;
+    }
+    .holiday {
+      background-color: #ffe5e5;
+    }
+    a {
       text-decoration: none;
-      color: #007bff;
-    }
-
-    td a:hover {
-      text-decoration: underline;
-    }
-
-    footer {
-      margin-top: 30px;
-      color: #777;
-      font-size: 0.9em;
+      color: inherit;
     }
   </style>
 </head>
 <body>
-  <h1>📅 日記カレンダー</h1>
-  <div id="calendarContainer"></div>
-
-  <footer>
-    <p>© 2025 My Diary</p>
-  </footer>
+  <h1 style="text-align:center;">My Diary カレンダー</h1>
+  <div id="calendars"></div>
 
   <script>
-    // === 設定 ===
-    const startYear = 2025;
-    const startMonth = 10; // 10月
-    const endYear = 2026;
-    const endMonth = 1; // 1月
+    // ==== 設定 ====
+    const start = new Date(2025, 9);  // 2025年10月
+    const end = new Date(2026, 11);   // 2026年12月
 
-    const container = document.getElementById("calendarContainer");
+    // 日本の祝日（代表的なもののみ）
+    const holidays = [
+      "2025-01-01", "2025-01-13", "2025-02-11", "2025-02-23", "2025-03-20",
+      "2025-04-29", "2025-05-03", "2025-05-04", "2025-05-05", "2025-07-21",
+      "2025-08-11", "2025-09-15", "2025-09-23", "2025-10-13", "2025-11-03", "2025-11-23", "2025-12-23",
+      "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
+      "2026-04-29", "2026-05-03", "2026-05-04", "2026-05-05", "2026-07-20",
+      "2026-08-11", "2026-09-21", "2026-09-22", "2026-10-12", "2026-11-03", "2026-11-23", "2026-12-23"
+    ];
 
-    // === カレンダー生成関数 ===
-    function generateCalendar(year, month) {
-      const firstDay = new Date(year, month - 1, 1);
-      const lastDay = new Date(year, month, 0).getDate();
-      const startWeekDay = firstDay.getDay();
+    const container = document.getElementById("calendars");
 
-      let html = `<div class="month"><h2>${year}年${month}月</h2>`;
-      html += `<table><tr><th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th></tr><tr>`;
+    // 月ループ
+    for (let d = new Date(start); d <= end; d.setMonth(d.getMonth() + 1)) {
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      
+      // 見出し
+      const h2 = document.createElement("h2");
+      h2.textContent = `${year}年${month + 1}月`;
+      container.appendChild(h2);
 
-      // 空白セル
-      for (let i = 0; i < startWeekDay; i++) {
-        html += "<td></td>";
+      // カレンダー本体
+      const cal = document.createElement("div");
+      cal.className = "calendar";
+      
+      // 曜日ヘッダ
+      const weekDays = ["日","月","火","水","木","金","土"];
+      weekDays.forEach(day => {
+        const cell = document.createElement("div");
+        cell.className = "day header";
+        cell.textContent = day;
+        cal.appendChild(cell);
+      });
+
+      // 空白セル（前月分）
+      for (let i = 0; i < firstDay.getDay(); i++) {
+        const empty = document.createElement("div");
+        cal.appendChild(empty);
       }
 
       // 日付セル
-      for (let day = 1; day <= lastDay; day++) {
-        const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        html += `<td><a href="dailies/${dateStr}.html">${day}</a></td>`;
-        if ((startWeekDay + day) % 7 === 0) html += "</tr><tr>";
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const date = new Date(year, month, day);
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+        // 曜日別クラス
+        if (date.getDay() === 0) cell.classList.add("sunday");
+        if (date.getDay() === 6) cell.classList.add("saturday");
+        if (holidays.includes(dateStr)) cell.classList.add("holiday");
+
+        // リンク生成（存在しないページもOK）
+        const link = document.createElement("a");
+        link.href = `dailies/${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}.html`;
+        link.textContent = day;
+        cell.appendChild(link);
+
+        cal.appendChild(cell);
       }
 
-      html += "</tr></table></div>";
-      return html;
-    }
-
-    // === 範囲内の全カレンダー生成 ===
-    let currentYear = startYear;
-    let currentMonth = startMonth;
-
-    while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
-      container.innerHTML += generateCalendar(currentYear, currentMonth);
-
-      // 月を進める
-      currentMonth++;
-      if (currentMonth > 12) {
-        currentMonth = 1;
-        currentYear++;
-      }
+      container.appendChild(cal);
     }
   </script>
 </body>
