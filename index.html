@@ -159,52 +159,5 @@
 
   </script>
 
-  <script>
-  // ▼ カレンダーの最初の日付（あなたの日記開始日）
-  const FIRST_DATE = new Date("2025-10-24");
-
-  // ▼ カレンダーの最後の日付（範囲の終わり）
-  const LAST_DATE = new Date("2026-12-31");
-
-  function formatDate(d) {
-    return d.toISOString().split("T")[0];
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("nav-links");
-    if (!container) return; // nav-links がないページは無視
-
-    const dateStr = document.body.dataset.date;
-    if (!dateStr) return; // data-date がないページは無視
-
-    const current = new Date(dateStr);
-
-    // 前後の日付を生成
-    const prev = new Date(current);
-    prev.setDate(prev.getDate() - 1);
-
-    const next = new Date(current);
-    next.setDate(next.getDate() + 1);
-
-    // 範囲外ならリンクなし
-    const prevLink =
-      prev >= FIRST_DATE
-        ? `<a href="${formatDate(prev)}.html" class="prev">← 前の日</a>`
-        : `<span></span>`;
-
-    const nextLink =
-      next <= LAST_DATE
-        ? `<a href="${formatDate(next)}.html" class="next">次の日 →</a>`
-        : `<span></span>`;
-
-    container.innerHTML = `
-      <div class="nav-links">
-        ${prevLink}
-        ${nextLink}
-      </div>
-    `;
-  });
-</script>
-
 </body>
 </html>
